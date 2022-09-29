@@ -264,7 +264,7 @@ app.get("/Arpit/safeDownload/:id", (req, res) => {
 // @route GET /safeFiles/Arpit
 // @desc  Display files object
 app.get("/Arpit/safeFiles/secret", (req, res) => {
-  gfs.files.find().toArray((err, files) => {
+  safeGfs.files.find().toArray((err, files) => {
     // Check if files
     if (!files || files.length === 0) {
       return res.status(404).json({

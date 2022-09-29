@@ -17,7 +17,7 @@ I am using this app as a medium transfer files from my phone to laptop or vice-v
 
 - Arguments : No Arguments
 - Return : Renders a ejs page with basic UI design to show the usage of the API.
-  Here you can upload, delete as well as download the files.
+- Here you can upload, delete as well as download the files.
   It Loads data from the mongo database and displays all the files uploaded in the database, these file are public for now and anyone who visits the site can see, delete and download them
 
 ### "/upload" POST Route
