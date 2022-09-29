@@ -8,6 +8,8 @@ const Grid = require("gridfs-stream");
 const methodOverride = require("method-override");
 const bodyParser = require("body-parser");
 const ObjectId = require("mongodb").ObjectId;
+const env = require("dotenv");
+env.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -142,6 +144,38 @@ app.get("/image/:filename", (req, res) => {
         err: "Not an image",
       });
     }
+  });
+});
+
+// @route GET /download/:filename
+// @desc  Download single file object
+app.get("/download/:filename", (req, res) => {
+  const gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+    bucketName: "uploads",
+  });
+  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+    // if error
+    if (err) {
+      return res.status(400).send(err);
+    }
+    // check if file
+    if (!file || file.length === 0) {
+      return res.status(404).json({
+        err: "No file exists",
+      });
+    }
+    res.set("Content-Type", file.contentType);
+    res.set(
+      "Content-Disposition",
+      'attachment; filename="' + file.filename + '"'
+    );
+    // streaming from gridfs
+    const readstream = gridfsBucket.openDownloadStream(file._id);
+    // on error while reading
+    readstream.on("error", function (err) {
+      res.end();
+    });
+    readstream.pipe(res);
   });
 });
 

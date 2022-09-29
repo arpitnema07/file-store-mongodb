@@ -51,6 +51,11 @@
                     <button type="submit" class="btn btn-danger">Delete</button>
                   </li>
                 </form>
+                <form method="get" action="/download/<%= file.filename %>">
+                  <button type="submit" class="btn btn-primary">
+                    Download
+                  </button>
+                </form>
                 <% }) %> <% } else { %>
                 <li class="list-group-item">No files</li>
                 <% } %>
