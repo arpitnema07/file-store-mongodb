@@ -42,16 +42,14 @@
                     class="list-group-item d-flex justify-content-between align-items-center"
                   >
                     <% if(file.isImage) { %>
-                    <img src="/image/<%= file.filename %>" />
+                    <img src="/image/<%= file._id %>" />
                     <% } else { %>
-                    <a href="/image/<%= file.filename %>"
-                      ><%= file.filename %></a
-                    >
+                    <a href="/image/<%= file._id %>"><%= file.filename %></a>
                     <% } %>
                     <button type="submit" class="btn btn-danger">Delete</button>
                   </li>
                 </form>
-                <form method="get" action="/download/<%= file.filename %>">
+                <form method="get" action="/download/<%= file._id %>">
                   <button type="submit" class="btn btn-primary">
                     Download
                   </button>

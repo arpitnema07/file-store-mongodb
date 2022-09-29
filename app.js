@@ -86,8 +86,8 @@ app.get("/", (req, res) => {
 // @route POST /upload
 // @desc  Uploads file to DB
 app.post("/upload", upload.single("file"), (req, res) => {
-  //   res.json({ file: req.file });
-  res.redirect("/");
+  return res.json({ file: req.file });
+  // res.redirect("/");
 });
 
 // @route GET /files
@@ -108,8 +108,23 @@ app.get("/files", (req, res) => {
 
 // @route GET /files/:filename
 // @desc  Display single file object
-app.get("/files/:filename", (req, res) => {
-  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+app.get("/files/:id", (req, res) => {
+  gfs.files.findOne({ _id: ObjectId(req.params.id) }, (err, file) => {
+    // Check if file
+    if (!file || file.length === 0) {
+      return res.status(404).json({
+        err: "No file exists",
+      });
+    }
+    // File exists
+    return res.json(file);
+  });
+});
+
+// @route GET /files/:id
+// @desc  Display single file object
+app.get("/files/id/:id", (req, res) => {
+  gfs.files.findOne({ _id: ObjectId(req.params.id) }, (err, file) => {
     // Check if file
     if (!file || file.length === 0) {
       return res.status(404).json({
@@ -123,11 +138,11 @@ app.get("/files/:filename", (req, res) => {
 
 // @route GET /image/:filename
 // @desc Display Image
-app.get("/image/:filename", (req, res) => {
+app.get("/image/:id", (req, res) => {
   const gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
     bucketName: "uploads",
   });
-  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+  gfs.files.findOne({ _id: ObjectId(req.params.id) }, (err, file) => {
     // Check if file
     if (!file || file.length === 0) {
       return res.status(404).json({
@@ -149,11 +164,11 @@ app.get("/image/:filename", (req, res) => {
 
 // @route GET /download/:filename
 // @desc  Download single file object
-app.get("/download/:filename", (req, res) => {
+app.get("/download/:id", (req, res) => {
   const gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
     bucketName: "uploads",
   });
-  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
+  gfs.files.findOne({ _id: ObjectId(req.params.id) }, (err, file) => {
     // if error
     if (err) {
       return res.status(400).send(err);
@@ -176,22 +191,6 @@ app.get("/download/:filename", (req, res) => {
       res.end();
     });
     readstream.pipe(res);
-  });
-});
-
-// @route DELETE /files/:id
-// @desc  Delete file
-app.delete("/files/:id", (req, res) => {
-  console.log(req.params.id);
-  const gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
-    bucketName: "uploads",
-  });
-  gridfsBucket.delete(ObjectId(req.params.id.toString()), (err, gridStore) => {
-    if (err) {
-      return res.status(404).json({ err: err });
-    } else {
-      res.redirect("/");
-    }
   });
 });
 
