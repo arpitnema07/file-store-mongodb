@@ -220,11 +220,11 @@ const safeStorage = new GridFsStorage({
   },
 });
 
-const safeUpload = multer({ safeStorage });
+const safeUpload = multer({ storage: safeStorage });
 
 // @route POST /safeUpload
 // @desc  Uploads file to DB
-app.post("/Arpit/safeUpload", safeUpload.single("file"), (req, res) => {
+app.post("/Arpit/safeUpload", safeUpload.single("safeFile"), (req, res) => {
   return res.json({ file: req.file });
   // res.redirect("/");
 });
