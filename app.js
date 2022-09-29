@@ -27,6 +27,7 @@ const conn = mongoose.createConnection(mongoURI);
 
 // Init gfs
 let gfs;
+let safeGfs;
 conn.on("error", (err) => {
   console.log("Could not connect to mongo server!");
   console.log(err);
@@ -36,6 +37,8 @@ conn.once("open", () => {
   // Init stream
   gfs = Grid(conn.db, mongoose.mongo);
   gfs.collection("uploads");
+  safeGfs = Grid(conn.db, mongoose.mongo);
+  safeGfs.collection("safeUploads");
 });
 
 // Create storage engine
@@ -86,8 +89,8 @@ app.get("/", (req, res) => {
 // @route POST /upload
 // @desc  Uploads file to DB
 app.post("/upload", upload.single("file"), (req, res) => {
-  return res.json({ file: req.file });
-  // res.redirect("/");
+  // return res.json({ file: req.file });
+  return res.redirect("/");
 });
 
 // @route GET /files
@@ -109,21 +112,6 @@ app.get("/files", (req, res) => {
 // @route GET /files/:filename
 // @desc  Display single file object
 app.get("/files/:id", (req, res) => {
-  gfs.files.findOne({ _id: ObjectId(req.params.id) }, (err, file) => {
-    // Check if file
-    if (!file || file.length === 0) {
-      return res.status(404).json({
-        err: "No file exists",
-      });
-    }
-    // File exists
-    return res.json(file);
-  });
-});
-
-// @route GET /files/:id
-// @desc  Display single file object
-app.get("/files/id/:id", (req, res) => {
   gfs.files.findOne({ _id: ObjectId(req.params.id) }, (err, file) => {
     // Check if file
     if (!file || file.length === 0) {
@@ -162,7 +150,7 @@ app.get("/image/:id", (req, res) => {
   });
 });
 
-// @route GET /download/:filename
+// @route GET /download/:id
 // @desc  Download single file object
 app.get("/download/:id", (req, res) => {
   const gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
@@ -191,6 +179,101 @@ app.get("/download/:id", (req, res) => {
       res.end();
     });
     readstream.pipe(res);
+  });
+});
+
+// @route DELETE /files/:id
+// @desc  Delete file
+app.delete("/files/:id", (req, res) => {
+  console.log(req.params.id);
+  const gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+    bucketName: "uploads",
+  });
+  gridfsBucket.delete(ObjectId(req.params.id.toString()), (err, gridStore) => {
+    if (err) {
+      return res.status(404).json({ err: err });
+    } else {
+      res.redirect("/");
+    }
+  });
+});
+
+// Api for personal use
+
+// Create safe storage engine
+const safeStorage = new GridFsStorage({
+  url: mongoURI,
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(16, (err, buf) => {
+        if (err) {
+          return reject(err);
+        }
+        const filename = buf.toString("hex") + path.extname(file.originalname);
+        const fileInfo = {
+          filename: filename,
+          bucketName: "safeUploads",
+        };
+        resolve(fileInfo);
+      });
+    });
+  },
+});
+
+const safeUpload = multer({ safeStorage });
+
+// @route POST /safeUpload
+// @desc  Uploads file to DB
+app.post("/Arpit/safeUpload", safeUpload.single("file"), (req, res) => {
+  return res.json({ file: req.file });
+  // res.redirect("/");
+});
+
+// @route GET /download/:id
+// @desc  Download single file object
+app.get("/Arpit/safeDownload/:id", (req, res) => {
+  const gridfsBucket = new mongoose.mongo.GridFSBucket(conn.db, {
+    bucketName: "safeUploads",
+  });
+  gfs.files.findOne({ _id: ObjectId(req.params.id) }, (err, file) => {
+    // if error
+    if (err) {
+      return res.status(400).send(err);
+    }
+    // check if file
+    if (!file || file.length === 0) {
+      return res.status(404).json({
+        err: "No file exists",
+      });
+    }
+    res.set("Content-Type", file.contentType);
+    res.set(
+      "Content-Disposition",
+      'attachment; filename="' + file.filename + '"'
+    );
+    // streaming from gridfs
+    const readstream = gridfsBucket.openDownloadStream(file._id);
+    // on error while reading
+    readstream.on("error", function (err) {
+      res.end();
+    });
+    readstream.pipe(res);
+  });
+});
+
+// @route GET /safeFiles/Arpit
+// @desc  Display files object
+app.get("/Arpit/safeFiles/secret", (req, res) => {
+  gfs.files.find().toArray((err, files) => {
+    // Check if files
+    if (!files || files.length === 0) {
+      return res.status(404).json({
+        err: "No files exist",
+      });
+    }
+
+    // Files exist
+    return res.json(files);
   });
 });
 
