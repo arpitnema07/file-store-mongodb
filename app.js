@@ -46,17 +46,12 @@ const storage = new GridFsStorage({
   url: mongoURI,
   file: (req, file) => {
     return new Promise((resolve, reject) => {
-      crypto.randomBytes(16, (err, buf) => {
-        if (err) {
-          return reject(err);
-        }
-        const filename = buf.toString("hex") + path.extname(file.originalname);
-        const fileInfo = {
-          filename: filename,
-          bucketName: "uploads",
-        };
-        resolve(fileInfo);
-      });
+      const filename = file.originalname + path.extname(file.originalname);
+      const fileInfo = {
+        filename: filename,
+        bucketName: "uploads",
+      };
+      resolve(fileInfo);
     });
   },
 });
@@ -91,22 +86,6 @@ app.get("/", (req, res) => {
 app.post("/upload", upload.single("file"), (req, res) => {
   // return res.json({ file: req.file });
   return res.redirect("/");
-});
-
-// @route GET /files
-// @desc  Display all files in JSON
-app.get("/files", (req, res) => {
-  gfs.files.find().toArray((err, files) => {
-    // Check if files
-    if (!files || files.length === 0) {
-      return res.status(404).json({
-        err: "No files exist",
-      });
-    }
-
-    // Files exist
-    return res.json(files);
-  });
 });
 
 // @route GET /files/:filename
@@ -220,11 +199,11 @@ const safeStorage = new GridFsStorage({
   },
 });
 
-const safeUpload = multer({ storage: safeStorage });
+const safeUpload = multer({ safeStorage });
 
 // @route POST /safeUpload
 // @desc  Uploads file to DB
-app.post("/Arpit/safeUpload", safeUpload.single("safeFile"), (req, res) => {
+app.post("/Arpit/safeUpload", safeUpload.single("file"), (req, res) => {
   return res.json({ file: req.file });
   // res.redirect("/");
 });
@@ -265,6 +244,24 @@ app.get("/Arpit/safeDownload/:id", (req, res) => {
 // @desc  Display files object
 app.get("/Arpit/safeFiles/secret", (req, res) => {
   safeGfs.files.find().toArray((err, files) => {
+    // Check if files
+    if (!files || files.length === 0) {
+      return res.status(404).json({
+        err: "No files exist",
+      });
+    }
+
+    // Files exist
+    return res.json(files);
+  });
+});
+
+/** Important for project */
+
+// @route GET /files
+// @desc  Display all files in JSON
+app.get("/files", (req, res) => {
+  gfs.files.find().toArray((err, files) => {
     // Check if files
     if (!files || files.length === 0) {
       return res.status(404).json({
