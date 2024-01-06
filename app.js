@@ -80,6 +80,10 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/share", (req, res) => {
+  res.render("share");
+});
+
 // @route POST /upload
 // @desc  Uploads file to DB
 app.post("/upload", upload.single("file"), (req, res) => {

@@ -44,7 +44,7 @@
                     <% if(file.isImage) { %>
                     <img src="/image/<%= file._id %>" />
                     <% } else { %>
-                    <a href="/image/<%= file._id %>"><%= file.filename %></a>
+                    <a href="/download/<%= file._id %>"><%= file.filename %></a>
                     <% } %>
                     <button type="submit" class="btn btn-danger">Delete</button>
                   </li>
