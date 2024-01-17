@@ -150,6 +150,7 @@ app.get("/download/:id", (req, res) => {
       });
     }
     res.set("Content-Type", file.contentType);
+    res.setHeader("Content-Length", file.length);
     res.set(
       "Content-Disposition",
       'attachment; filename="' + file.filename + '"'
