@@ -122,6 +122,7 @@ app.get("/image/:id", (req, res) => {
     // Check if image
     if (file.contentType === "image/jpeg" || file.contentType === "image/png") {
       // Read output to browser
+      res.set("Content-Type", file.contentType);
       const readstream = gridfsBucket.openDownloadStream(file._id);
       readstream.pipe(res);
     } else {
