@@ -80,6 +80,10 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/time", (req, res) => {
+  res.send(Math.floor(Date.now()));
+});
+
 app.get("/share", (req, res) => {
   res.render("share");
 });
