@@ -9,6 +9,11 @@ const methodOverride = require("method-override");
 const bodyParser = require("body-parser");
 const ObjectId = require("mongodb").ObjectId;
 const env = require("dotenv");
+
+const cors = require("cors");
+
+const nodemailer = require("nodemailer");
+
 env.config();
 
 const app = express();
@@ -20,6 +25,7 @@ app.use(methodOverride("_method"));
 
 app.set("view engine", "ejs");
 
+app.use(cors());
 // Mongo URI
 const mongoURI = process.env.DATABASE_URL;
 // Create mongo connection
@@ -280,6 +286,37 @@ app.get("/files", (req, res) => {
 
     // Files exist
     return res.json(files);
+  });
+});
+
+// mailing
+
+// Nodemailer transporter setup
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL_ID, // replace with your email
+    pass: process.env.MAIL_PASS, // replace with your email password or an app-specific password
+  },
+});
+
+// Endpoint to send email
+app.post("/send-email", (req, res) => {
+  console.log(req.body);
+  const { subject, body, email } = req.body;
+
+  const mailOptions = {
+    from: process.env.MAIL_ID, // replace with your email
+    to: email,
+    subject: subject,
+    text: body,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return res.status(500).json({ error: error.toString() });
+    }
+    res.status(200).json({ message: "Email sent: " + info.response });
   });
 });
 
