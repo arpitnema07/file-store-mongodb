@@ -76,7 +76,7 @@
 
       dropContainer.ondrop = function(evt) {
         // pretty simple -- but not for IE :(
-        fileInput.files = evt.dataTransfer.files;
+        file.files = evt.dataTransfer.files;
 
         // If you want to use some of the dropped files
         const dT = new DataTransfer();
