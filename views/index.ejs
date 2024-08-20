@@ -18,13 +18,13 @@
     <title>Instant Share</title>
   </head>
   <body>
-    <div class="container">
+    <div class="container" id="dropContainer">
       <div class="row">
         <div class="col-md-6 offset-md-3">
           <h1 class="text-center">Instant Share</h1>
           <form action="/upload" method="POST" enctype="multipart/form-data">
             <div class="custom-file mb-3">
-              <input type="file" class="form-control" id="file" name="file" />
+              <input type="file" multiple class="form-control" id="file" name="file" />
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
@@ -68,5 +68,24 @@
       integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
       crossorigin="anonymous"
     ></script>
+
+    <script>
+      dropContainer.ondragover = dropContainer.ondragenter = function(evt) {
+        evt.preventDefault();
+      };
+
+      dropContainer.ondrop = function(evt) {
+        // pretty simple -- but not for IE :(
+        fileInput.files = evt.dataTransfer.files;
+
+        // If you want to use some of the dropped files
+        const dT = new DataTransfer();
+        dT.items.add(evt.dataTransfer.files[0]);
+        dT.items.add(evt.dataTransfer.files[3]);
+        fileInput.files = dT.files;
+
+        evt.preventDefault();
+      };
+    </script>
   </body>
 </html>
